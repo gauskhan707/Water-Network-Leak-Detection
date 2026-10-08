@@ -1,64 +1,64 @@
 # Water Network Leak Detection — Time-Aware Classification
 
-A portfolio machine-learning project that evaluates whether published hourly anomaly scores can classify observations associated with recorded leak events in an urban water-network dataset.
+## Project overview
 
-> **Important:** This is **leak-proximity classification**, not a guaranteed real-time leak detector, production alarm, or early-warning system. `fault_d7 = 1` means an observation lies within approximately ±7 days before or after a recorded leak event.
+This portfolio project studies whether published hourly anomaly scores can classify observations associated with recorded leak events in a water-network dataset. The target is `fault_d7`.
 
-## Final result
+> **Important:** this is **leak-proximity classification**, not a guaranteed real-time leak detector, production alarm, or early-warning system. `fault_d7 = 1` means that an observation lies within approximately ±7 days before or after a recorded leak event; it does not mean that a leak is happening at that exact hour.
 
-On the untouched future test period, the tuned Logistic Regression did **not** outperform the majority-class baseline.
+## Headline result
 
-| Metric | Baseline | Tuned Logistic Regression |
+With the timestamp order corrected and the final period kept untouched, the tuned Logistic Regression performed worse than the simple “always predict the majority class” baseline:
+
+| Final-test metric | Baseline | Tuned Logistic Regression |
 |---|---:|---:|
 | Accuracy | **0.890** | 0.292 |
 | Precision | 0.890 | **0.805** |
 | Recall | **1.000** | 0.270 |
 | Specificity | 0.000 | 0.469 |
-| Balanced Accuracy | **0.500** | 0.369 |
+| Balanced accuracy | **0.500** | 0.369 |
 | F1 | **0.942** | 0.404 |
 | ROC-AUC | **0.500** | 0.310 |
-| PR-AUC | 0.890 | 0.823 |
+| PR-AUC | **0.890** | 0.823 |
 
-The main conclusion is deliberately honest: **these published anomaly scores, used this way, do not support reliable classification of later observations in this one-year dataset.**
+The ML model produced 90 true negatives, 102 false positives, **1,136 false negatives**, and 420 true positives. The honest conclusion is that these published anomaly scores, used this way, do not support reliable classification of later observations in this one-year dataset.
 
-## What this project demonstrates
+## What the notebook covers
 
-- Time-aware exploratory data analysis
-- Class-imbalance analysis
-- Feature preparation
-- Data-leakage prevention
-- Chronological train/validation/test splitting
-- Baseline classification
-- Logistic Regression
-- Random Forest
-- HistGradientBoosting
-- Accuracy, Precision, Recall, F1
-- ROC-AUC and PR-AUC
-- Specificity and balanced accuracy
-- `TimeSeriesSplit`
-- `GridSearchCV`
-- Confusion-matrix analysis
-- ROC and Precision-Recall curves
-- Error analysis
-- Feature importance
-- Model reality checks
-- Risk and limitation analysis
+The notebook retains all 26 learning sections: project introduction, dataset understanding, data quality, EDA, target and class imbalance, date/time interpretation, feature preparation, leakage analysis, chronological splitting, preprocessing, baseline, Logistic Regression, Random Forest, HistGradientBoosting, metrics, why accuracy can mislead, `TimeSeriesSplit`, `GridSearchCV`, model comparison, untouched final test, confusion matrix, ROC/PR curves, error analysis, feature interpretation, reality check, risk analysis, limitations, and conclusion.
 
-## Repository structure
+## Methodology
+
+- Correct the mixed timestamp convention inferred from the CSV and verify a strict hourly sequence.
+- Use the first 60% as training, next 20% as validation, and final 20% as an untouched future test.
+- Fit imputation, missingness indicators, and scaling only on training data.
+- Compare a majority-class baseline with Logistic Regression, Random Forest, and HistGradientBoosting.
+- Use `TimeSeriesSplit` with a 14-day gap on development data.
+- Use a small, reproducible `GridSearchCV` for Logistic Regression, selecting by ROC-AUC.
+- Report Accuracy, Precision, Recall, F1, ROC-AUC, PR-AUC, Specificity, Balanced Accuracy, and confusion-matrix counts.
+
+## Dataset
+
+The dataset contains 8,737 hourly rows from 31 December 2021 to 30 December 2022, 18 anomaly-score features, and the binary `fault_d7` label. Class 1 is the majority overall (6,432 rows; 73.6%) and makes up 89.0% of the final test period. The publisher metadata and this project's timestamp audit are in `03_Data/DATASET_README.txt`.
+
+## Important limitations
+
+The label is a symmetric event-proximity window, not a forward-looking operational target. The source contains only about eight leak periods, sensor outages are uneven across time, the strongest groundwater relationship reverses across periods, and the final test includes only eight class-0 days. Results should not be generalized to another network, year, or production setting.
+
+## Folder structure
 
 ```text
 Water-Network-Leak-Detection/
-├── 01_Notebook/       # Executed analytical notebook
-├── 02_HTML_Report/    # Polished case-study report
-├── 03_Data/           # Dataset and dataset documentation
-├── 04_Figures/        # Reusable project figures
-├── 05_Documentation/  # Detailed project README
+├── 01_Notebook/       # Executed, fully explained analytical notebook
+├── 02_HTML_Report/    # Polished, self-contained case-study report
+├── 03_Data/           # Dataset and data documentation
+├── 04_Figures/        # Reusable PNG figures generated by the notebook
+├── 05_Documentation/  # This README and project documentation
 ├── requirements.txt
-├── LICENSE
-└── .gitignore
+└── LICENSE
 ```
 
-## Run the project
+## How to run
 
 ```bash
 cd 01_Notebook
@@ -66,18 +66,8 @@ pip install -r ../requirements.txt
 jupyter notebook Water_Network_Leak_Detection_Time_Aware_Classification.ipynb
 ```
 
-Run the notebook from `01_Notebook` so its relative paths resolve correctly.
+Run the notebook from `01_Notebook` so its relative paths resolve to `../03_Data` and `../04_Figures`. The HTML report is already included for quick review.
 
-## Dataset
+## Attribution
 
-Dataset: *Hourly Anomaly Scores and Leak Labels from a Multi-Source Urban Water Distribution Network Dataset*
-
-Zenodo DOI: `10.5281/zenodo.15096167`
-
-The dataset is attributed under **CC BY 4.0**. See `03_Data/DATASET_README.txt` for dataset details and attribution information.
-
-## Key limitation
-
-The `fault_d7` label is a symmetric ±7-day event-proximity label rather than a forward-looking operational target. The final test period is also strongly class-imbalanced. Results should therefore **not** be interpreted as evidence of production-ready leak detection or generalized to another network, year, or operational setting.
-
-See `05_Documentation/README.md` for the complete methodology, findings, limitations, and project documentation.
+Dataset: *Hourly Anomaly Scores and Leak Labels from a Multi-Source Urban Water Distribution Network Dataset*, Zenodo DOI `10.5281/zenodo.15096167`, CC BY 4.0. Preserve attribution when reusing the data.
